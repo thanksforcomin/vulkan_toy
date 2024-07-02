@@ -1,0 +1,68 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4...3.28 FATAL_ERROR)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_COMPILER /bin/clang++)
+set(CMAKE_C_COMPILER /bin/clang)
+
+project(renderer)
+
+add_compile_options(-w)
+
+file (GLOB_RECURSE SRC_FILES src/*.c**)
+file (GLOB_RECURSE HEADER_FILES include/*.h**)
+
+add_executable(test ${SRC_FILES} ${HEADER_FILES})
+
+#vulkan
+if(WIN32)
+    set(ENV{VULKAN_SDK} "C:/VulkanSDK/*")
+endif()
+find_package(Vulkan REQUIRED)
+if(Vulkan_FOUND)
+    message("vulkan found")
+    include_directories(${Vulkan_INCLUDE_DIRS})
+    target_link_libraries(test PRIVATE Vulkan::Vulkan)
+else()
+    message("no vulkan???")
+endif()
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+if(WIN32)
+    add_subdirectory("libs/glfw")
+    target_link_libraries(test PRIVATE glfw)
+else()
+    find_package(glfw3 REQUIRED)
+    if(glfw3_FOUND)
+        set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        target_link_libraries(test PRIVATE glfw)
+    else()
+        message("importing GLFW via subdirectory")
+        add_subdirectory("${CMAKE_SOURCE_DIR}/libs/glfw")
+        target_link_libraries(test PRIVATE  glfw)
+    endif()
+endif()
+
+find_package(glm REQUIRED)
+if (glm_FOUND)
+    target_link_libraries(test PRIVATE glm::glm)
+else()
+    message("importing GLM via subdirectory")
+endif()
+
+find_package(VulkanMemoryAllocator CONFIG)
+if (VulkanMemoryAllocator_FOUND)
+    target_link_libraries(test PRIVATE GPUOpen::VulkanMemoryAllocator)
+else()
+    message("importing VMA via subdirectory")
+    set(VMA_DIR "${CMAKE_SOURCE_DIR}/libs/VulkanMemoryAllocator")
+    add_subdirectory(${VMA_DIR})
+    target_link_libraries(test PRIVATE GPUOpen::VulkanMemoryAllocator)
+endif()
