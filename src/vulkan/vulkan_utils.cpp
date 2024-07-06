@@ -119,6 +119,10 @@ namespace vulkan {
                 ind.present_family = count;
             if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
                 ind.graphics_family = count;
+            if (queue_family.queueFlags & VK_QUEUE_COMPUTE_BIT)
+                ind.compute_family = count;
+            if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT)
+                ind.transfer_family = count;
             if (ind.is_complete())
                 break;
             count++;

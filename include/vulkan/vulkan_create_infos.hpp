@@ -43,6 +43,17 @@ namespace vulkan {
         };
     }
 
+    inline VkDeviceQueueCreateInfo queue_create_info(uint32_t index, float priority) {
+        return {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .queueFamilyIndex = index,
+            .queueCount = 1,
+            .pQueuePriorities = &priority
+        };
+    }
+
     inline VkSwapchainCreateInfoKHR swap_chain_create_info(GLFWwindow *window, 
                                                     uint32_t min_image_count,
                                                     swap_chain_support_details swap_chain_support,
