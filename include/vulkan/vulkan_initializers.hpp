@@ -13,18 +13,18 @@ namespace glfw {
 }
 
 namespace vulkan {
-    VkSurfaceKHR create_surface(VkInstance &inst, GLFWwindow *window);
+    VkSurfaceKHR create_surface(const VkInstance &inst, GLFWwindow *window);
 
     VkInstance create_instance(std::string application_name, std::vector<const char*> extensions = {});
 
-    VkPhysicalDevice create_physical_device(VkInstance &inst, VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
+    VkPhysicalDevice create_physical_device(const VkInstance &inst, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
 
-    VkDevice create_logical_device(VkPhysicalDevice &dev, VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
+    VkDevice create_logical_device(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
 
     VkQueue create_queue(VkDevice &dev, uint32_t queue_family_index);
     
-    VkSwapchainKHR create_swap_chain(vulkan_device &vulkan_dev, VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
-                                     GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode);
+    VkSwapchainKHR create_swap_chain(const vulkan_device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
+                                     const GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode);
                                     
     VkImage create_image(VkDevice &dev, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent);
 

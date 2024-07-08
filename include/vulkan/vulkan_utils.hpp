@@ -11,15 +11,15 @@
 namespace vulkan {
     std::vector<const char*> require_extensions();
 
-    bool is_device_valid(VkPhysicalDevice &dev, VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
+    bool is_device_valid(VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
 
     bool device_extensions_support(VkPhysicalDevice &dev, std::vector<const char*>& extensions);
 
     bool validation_layers_support(std::vector<const char *> validation_layers);
 
-    swap_chain_support_details get_swap_chain_support(VkPhysicalDevice &dev, VkSurfaceKHR &surface);
+    swap_chain_support_details get_swap_chain_support(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface);
     
-    queue_family_indicies find_queue_family(VkPhysicalDevice &dev, VkSurfaceKHR &surface);
+    queue_family_indicies find_queue_family(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface);
 
     VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes);
 

@@ -22,7 +22,7 @@ namespace vulkan {
     /*
      * Creates a Vulkan surface for a GLFW window.
      */
-    VkSurfaceKHR create_surface(VkInstance &inst, GLFWwindow *window) {
+    VkSurfaceKHR create_surface(const VkInstance &inst, GLFWwindow *window) {
         VkSurfaceKHR res;
         if (glfwCreateWindowSurface(inst, window, nullptr, &res) != VK_SUCCESS)
             throw std::runtime_error("failed to create window surface\n");
@@ -65,7 +65,7 @@ namespace vulkan {
     /*
      * Creates a physical device for Vulkan rendering.
      */
-    VkPhysicalDevice create_physical_device(VkInstance &inst, VkSurfaceKHR& surface, std::vector<const char*>& device_extensions) {
+    VkPhysicalDevice create_physical_device(const VkInstance &inst, const VkSurfaceKHR& surface, std::vector<const char*>& device_extensions) {
         unsigned int device_count = 0;
         vkEnumeratePhysicalDevices(inst, &device_count, nullptr);
 
@@ -93,7 +93,7 @@ namespace vulkan {
     /**
     * Creates a logical device for Vulkan graphics rendering.
     */
-    VkDevice create_logical_device(VkPhysicalDevice &dev, VkSurfaceKHR &surface, std::vector<const char*>& device_extensions) {
+    VkDevice create_logical_device(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions) {
         queue_family_indicies queue_family = find_queue_family(dev, surface);
         std::set<uint32_t> unique_family_queues = {queue_family.graphics_family.value(), queue_family.present_family.value()};
 
@@ -104,12 +104,8 @@ namespace vulkan {
 
         for (uint32_t queue_family : unique_family_queues)
         {
-            VkDeviceQueueCreateInfo queue_create_info = {};
-            queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queue_create_info.queueCount = 1;
-            queue_create_info.queueFamilyIndex = queue_family;
-            queue_create_info.pQueuePriorities = &queue_priority;
-            queue_create_infos.push_back(queue_create_info);
+            VkDeviceQueueCreateInfo create_info(queue_create_info(queue_family, queue_priority));
+            queue_create_infos.push_back(create_info);
         }
 
         VkDeviceCreateInfo create_info = vulkan::logical_device_create_info(&device_fetures, queue_create_infos, device_extensions); // logical device create info
@@ -129,8 +125,8 @@ namespace vulkan {
         return queue;
     }
 
-    VkSwapchainKHR create_swap_chain(vulkan_device &vulkan_dev, VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
-                                     GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode) {
+    VkSwapchainKHR create_swap_chain(const vulkan_device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
+                                     const GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode) {
 
         VkSwapchainCreateInfoKHR create_info{ 
             swap_chain_create_info(window,

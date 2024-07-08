@@ -54,13 +54,13 @@ namespace vulkan {
         };
     }
 
-    inline VkSwapchainCreateInfoKHR swap_chain_create_info(GLFWwindow *window, 
+    inline VkSwapchainCreateInfoKHR swap_chain_create_info(const GLFWwindow *window, 
                                                     uint32_t min_image_count,
                                                     swap_chain_support_details swap_chain_support,
                                                     VkSurfaceFormatKHR format,
                                                     VkExtent2D extent,
                                                     VkPresentModeKHR present_mode,
-                                                    VkSurfaceKHR &surface, 
+                                                    const VkSurfaceKHR &surface, 
                                                     std::vector<uint32_t> queue_family_indicies,
                                                     VkSwapchainKHR old_swap_chain = VK_NULL_HANDLE)
     {

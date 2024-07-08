@@ -25,27 +25,16 @@ namespace core {
       ~swap_chain();
   };
   class vulkan_context {
-    private:
-      const GLFWwindow* window = nullptr;
+    public:
+      GLFWwindow* window = nullptr;
       const VkInstance instance;
       const VkSurfaceKHR surface;
       const vulkan::vulkan_device device;
       const vulkan::queue_family_indicies queue_indicies;
-      swap_chain swapchain;
+      const swap_chain swapchain;
       const VmaAllocator allocator;
     public:
       vulkan_context(std::vector<const char*> extensions, std::vector<const char*> device_extensions);
       ~vulkan_context();
-  };
-
-  class queue {
-    private:
-      vulkan_context* context;
-
-      VkQueue queue;
-    public:
-      queue(vulkan_context* context, uint32_t queue_family_index);
-      ~queue();
-
   };
 }

@@ -19,7 +19,7 @@ namespace vulkan {
         return {glfwExtensions, glfwExtensions + glfwExtensionCount};
     }
 
-    bool is_device_valid(VkPhysicalDevice &dev, VkSurfaceKHR &surface, std::vector<const char*>& device_extensions) {
+    bool is_device_valid(VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions) {
         queue_family_indicies indicies = find_queue_family(dev, surface);
 
         bool supports_extensions = device_extensions_support(dev, device_extensions);
@@ -76,7 +76,7 @@ namespace vulkan {
         return true;
     }
 
-    swap_chain_support_details get_swap_chain_support(VkPhysicalDevice &dev, VkSurfaceKHR &surface) {
+    swap_chain_support_details get_swap_chain_support(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface) {
         swap_chain_support_details details;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(dev, surface, &details.capabilities);
 
@@ -100,7 +100,7 @@ namespace vulkan {
         return details;
     }
 
-    queue_family_indicies find_queue_family(VkPhysicalDevice &dev, VkSurfaceKHR &surface) {
+    queue_family_indicies find_queue_family(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface) {
         queue_family_indicies ind;
 
         unsigned int queue_families_count = 0;
