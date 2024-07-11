@@ -23,12 +23,14 @@ namespace vulkan {
 
     VkQueue create_queue(VkDevice &dev, uint32_t queue_family_index);
     
+    VmaAllocator create_allocator(const vulkan_device& device, const VkInstance& instance);
+    
     VkSwapchainKHR create_swap_chain(const vulkan_device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
                                      const GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode);
                                     
     VkImage create_image(VkDevice &dev, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent);
 
-    VkImageView create_image_view(VkDevice &dev, VkImage &image, VkFormat &format);
+    VkImageView create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format);
 
     VkFramebuffer create_framebuffer(VkDevice &dev, VkRenderPass &render_pass, VkImageView *image_attachment, VkExtent2D extent, uint32_t attachment_count = 1);
 

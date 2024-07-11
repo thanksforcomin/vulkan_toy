@@ -23,6 +23,13 @@ namespace core {
       swap_chain(vulkan_context *context);
       swap_chain(VkSwapchainKHR swapchain, VkExtent2D extent, VkFormat format);
       ~swap_chain();
+
+      VkImageView get_image_view(uint32_t index);
+
+    private:
+      void create_image_views();
+
+      void recreate(); //for resizing
   };
   class vulkan_context {
     public:
@@ -33,8 +40,26 @@ namespace core {
       const vulkan::queue_family_indicies queue_indicies;
       const swap_chain swapchain;
       const VmaAllocator allocator;
+
+    private:
+      static std::vector<const char*> validation_layers;
+
+      static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+                VkDebugUtilsMessageSeverityFlagBitsEXT msg_severity,
+                VkDebugUtilsMessageSeverityFlagsEXT msg_type,
+                const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                void* user_data
+            );
+
+      VkDebugUtilsMessengerEXT debug_messenger;
     public:
       vulkan_context(std::vector<const char*> extensions, std::vector<const char*> device_extensions);
       ~vulkan_context();
+
+    private:
+      VkResult create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT *create_info,
+                                      const VkAllocationCallbacks *allocator,
+                                      VkDebugUtilsMessengerEXT *messenger);
+      void setup_debug_messenger();
   };
 }

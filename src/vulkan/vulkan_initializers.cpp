@@ -1,4 +1,5 @@
 #include "include/vulkan/vulkan_initializers.hpp"
+#include "include/vulkan/structs.hpp"
 #include "include/vulkan/vulkan_utils.hpp"
 #include "include/vulkan/vulkan_create_infos.hpp"
 
@@ -125,6 +126,14 @@ namespace vulkan {
         return queue;
     }
 
+    VmaAllocator create_allocator(const vulkan_device& device, const VkInstance& instance) {
+        VmaAllocator allocator;
+        VmaAllocatorCreateInfo allocator_info = allocator_create_info(instance, device);
+        if(vmaCreateAllocator(&allocator_info, &allocator) != VK_SUCCESS)
+            std::runtime_error("failed to create allocator\n");
+        return allocator;
+    }
+
     VkSwapchainKHR create_swap_chain(const vulkan_device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
                                      const GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode) {
 
@@ -153,7 +162,7 @@ namespace vulkan {
         return img;
     }
 
-    VkImageView create_image_view(VkDevice &dev, VkImage &image, VkFormat &format)
+    VkImageView create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format)
     {
         VkImageView image_view;
         VkImageViewCreateInfo create_info(image_view_create_info(image, format));

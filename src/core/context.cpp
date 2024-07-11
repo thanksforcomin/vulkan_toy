@@ -17,10 +17,9 @@ namespace core {
       }
     ),
     queue_indicies(vulkan::find_queue_family(device.physical, surface)),
-
-  {
-
-  }
+    swapchain(this), 
+    allocator(vulkan::create_allocator(device, instance))
+  { }
 
   vulkan_context::~vulkan_context() {
     vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -28,7 +27,46 @@ namespace core {
     vkDestroyInstance(instance, nullptr);
   }
 
+  VkResult vulkan_context::create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT *create_info,
+                                                   const VkAllocationCallbacks *allocator,
+                                                   VkDebugUtilsMessengerEXT *messenger)
+  {
+      auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+      if (func != nullptr)
+          return func(instance, create_info, allocator, messenger);
+      else
+          return VK_ERROR_EXTENSION_NOT_PRESENT;
+  }
 
+  void vulkan_context::setup_debug_messenger() {
+    VkDebugUtilsMessengerCreateInfoEXT create_info {
+      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+      .pNext = nullptr,
+      .flags = 0,
+      .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+      .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+      .pfnUserCallback = debug_callback,
+      .pUserData = nullptr
+    };
+
+    if (create_debug_messenger(&create_info, nullptr, &debug_messenger) != VK_SUCCESS)
+      throw std::runtime_error("failed to set up debug messenger\n");
+  }
+
+  VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_context::debug_callback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT msg_severity,
+        VkDebugUtilsMessageSeverityFlagsEXT msg_type,
+        const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
+        void *user_data)
+  {
+      std::cerr << "validation layers: " << callback_data->pMessage << std::endl;
+
+      return VK_FALSE;
+  }
+
+}
+
+namespace core {
   swap_chain::swap_chain(vulkan_context *context) :
     context(context)
   { 
@@ -44,5 +82,18 @@ namespace core {
                                          surface_format, 
                                          extent, 
                                          vulkan::choose_present_mode(support.present_modes));
+  }
+
+  swap_chain::~swap_chain() {
+    vkDestroySwapchainKHR(context->device.logical, swapchain_object, nullptr);
+  }
+
+  VkImageView swap_chain::get_image_view(uint32_t index) {
+    return image_views[index];
+  }
+
+  void swap_chain::create_image_views() {
+    for(VkImage& image : images) 
+      image_views.push_back(vulkan::create_image_view(context->device.logical, image, format));
   }
 }

@@ -54,6 +54,15 @@ namespace vulkan {
         };
     }
 
+    inline VmaAllocatorCreateInfo allocator_create_info(const VkInstance& instance, const vulkan_device& device) {
+        return {
+            .flags = 0,
+            .instance = instance,
+            .physicalDevice = device.physical,
+            .device = device.logical
+        };
+    }
+
     inline VkSwapchainCreateInfoKHR swap_chain_create_info(const GLFWwindow *window, 
                                                     uint32_t min_image_count,
                                                     swap_chain_support_details swap_chain_support,
