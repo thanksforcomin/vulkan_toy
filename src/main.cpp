@@ -1,6 +1,8 @@
 #include "include/core/context.hpp"
+#include "include/vulkan/vulkan_initializers.hpp"
 
 #include <iostream>
+#include <expected>
 
 int main() {
   std::vector<const char*> instance_extensions{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME};
@@ -13,7 +15,6 @@ int main() {
                                               VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME};
 
   core::vulkan_context context(instance_extensions, device_extensions);
-  std::cout << "wrapping up" << std::endl;
 
   return 0;
 }

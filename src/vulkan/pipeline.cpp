@@ -162,9 +162,10 @@ namespace vulkan {
             return VkPipelineColorBlendStateCreateInfo {
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
                 .pNext = nullptr,
-                .attachmentCount = 1,
+                .flags = 0,
                 .logicOpEnable = VK_FALSE,
                 .logicOp = VK_LOGIC_OP_COPY,
+                .attachmentCount = 1,
                 .pAttachments = attachment,
                 .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}
             };

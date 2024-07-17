@@ -35,11 +35,11 @@ namespace vulkan {
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .pQueueCreateInfos = queue_infos.data(),
             .queueCreateInfoCount = (uint32_t)queue_infos.size(),
-            .pEnabledFeatures = features,
+            .pQueueCreateInfos = queue_infos.data(),
             .enabledExtensionCount = (uint32_t)extensions.size(),
-            .ppEnabledExtensionNames = extensions.data()
+            .ppEnabledExtensionNames = extensions.data(),
+            .pEnabledFeatures = features
         };
     }
 
@@ -57,9 +57,9 @@ namespace vulkan {
     inline VmaAllocatorCreateInfo allocator_create_info(const VkInstance& instance, const vulkan_device& device) {
         return {
             .flags = 0,
-            .instance = instance,
             .physicalDevice = device.physical,
-            .device = device.logical
+            .device = device.logical,
+            .instance = instance
         };
     }
 
@@ -143,25 +143,6 @@ namespace vulkan {
         };
     }
 
-    inline VkFramebufferCreateInfo framebuffer_create_info(VkImageView *image_view, 
-                                                    VkRenderPass &render_pass,
-                                                    uint32_t width,
-                                                    uint32_t height,
-                                                    uint32_t attachment_count = 1,
-                                                    uint32_t layers = 1)
-    {
-        return VkFramebufferCreateInfo {
-            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-            .pNext = nullptr,
-            .renderPass = render_pass,
-            .attachmentCount = attachment_count,
-            .width = width,
-            .height = height,
-            .layers = layers,
-            .pAttachments = image_view
-        };
-    }
-
     inline VkCommandPoolCreateInfo command_pool_create_info(uint32_t queue_fam_index, 
                                                             VkCommandPoolCreateFlags flags)
     {
@@ -190,12 +171,13 @@ namespace vulkan {
         return VkDescriptorSetLayoutCreateInfo {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
-            .pBindings = binding,
-            .bindingCount = binding_count
+            .flags = 0,
+            .bindingCount = binding_count,
+            .pBindings = binding
         };
     };
 
-    inline VkDescriptorSetAllocateInfo descriptor_set_allocate_info(VkDescriptorPool &pool, VkDescriptorSetLayout *layout) {
+    inline VkDescriptorSetAllocateInfo descriptor_set_allocate_info(const VkDescriptorPool &pool, VkDescriptorSetLayout  *layout) {
         return VkDescriptorSetAllocateInfo {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
             .pNext = nullptr,
@@ -209,9 +191,9 @@ namespace vulkan {
         return VkDescriptorPoolCreateInfo {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
             .pNext = nullptr,
+            .maxSets = max_sets,
             .poolSizeCount = size,
-            .pPoolSizes = pool_sizes,
-            .maxSets = max_sets
+            .pPoolSizes = pool_sizes
         };
     };
 
@@ -263,9 +245,9 @@ namespace vulkan {
         return VkComputePipelineCreateInfo {
             .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
             .pNext = nullptr,
+            .flags = 0,
             .stage = stage_create_info,
             .layout = pipeline_layout,
-            .flags = 0,
             .basePipelineHandle = VK_NULL_HANDLE,
             .basePipelineIndex = -1
         };

@@ -4,7 +4,9 @@
 #include "include/vulkan/vulkan_create_infos.hpp"
 
 #include <iostream>
+#include <initializer_list>
 #include <set>
+#include <vulkan/vulkan_core.h>
 
 namespace glfw {
     GLFWwindow* create_window(uint32_t height, uint32_t width) {
@@ -115,7 +117,7 @@ namespace vulkan {
         
         VkDevice log_dev;
         if (vkCreateDevice(dev, &create_info, nullptr, &log_dev) != VK_SUCCESS)
-            std::runtime_error("failed to create device\n");
+            return VK_NULL_HANDLE;
 
         return log_dev;
     }
@@ -130,7 +132,7 @@ namespace vulkan {
         VmaAllocator allocator;
         VmaAllocatorCreateInfo allocator_info = allocator_create_info(instance, device);
         if(vmaCreateAllocator(&allocator_info, &allocator) != VK_SUCCESS)
-            std::runtime_error("failed to create allocator\n");
+            return VK_NULL_HANDLE;
         return allocator;
     }
 
@@ -150,7 +152,8 @@ namespace vulkan {
         };
 
         VkSwapchainKHR swap_chain;
-        vkCreateSwapchainKHR(vulkan_dev.logical, &create_info, nullptr, &swap_chain);
+        if (vkCreateSwapchainKHR(vulkan_dev.logical, &create_info, nullptr, &swap_chain) != VK_SUCCESS)
+            return VK_NULL_HANDLE;
         return swap_chain;
     }
 
@@ -158,7 +161,7 @@ namespace vulkan {
         VkImage img;
         VkImageCreateInfo create_info{image_create_info(format, usage, extent)};
         if (vkCreateImage(dev, &create_info, nullptr, &img) != VK_SUCCESS)
-            throw std::runtime_error("failed to create image\n");
+            return VK_NULL_HANDLE;
         return img;
     }
 
@@ -167,16 +170,8 @@ namespace vulkan {
         VkImageView image_view;
         VkImageViewCreateInfo create_info(image_view_create_info(image, format));
         if (vkCreateImageView(dev, &create_info, nullptr, &image_view) != VK_SUCCESS)
-            throw std::runtime_error("failed to create image view\n");
+            return VK_NULL_HANDLE;
         return image_view;
-    }
-
-    VkFramebuffer create_framebuffer(VkDevice &dev, VkRenderPass &render_pass, VkImageView *image_attachment, VkExtent2D extent, uint32_t attachment_count) {
-        VkFramebufferCreateInfo create_info{framebuffer_create_info(image_attachment, render_pass, extent.width, extent.height, attachment_count)};
-        VkFramebuffer framebuffer;
-        if (vkCreateFramebuffer(dev, &create_info, nullptr, &framebuffer) != VK_SUCCESS)
-            throw std::runtime_error("failed to create framebuffer\n");
-        return framebuffer;
     }
 
     VkCommandPool create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index) {
@@ -184,7 +179,7 @@ namespace vulkan {
         VkCommandPool command_pool;
         
         if(vkCreateCommandPool(dev, &create_info, nullptr, &command_pool) != VK_SUCCESS)
-            throw std::runtime_error("failed to create command pool\n");
+            return VK_NULL_HANDLE;
         return command_pool;
     }
 
@@ -193,7 +188,7 @@ namespace vulkan {
         VkCommandBuffer command_buffer;
 
         if (vkAllocateCommandBuffers(dev, &create_info, &command_buffer) != VK_SUCCESS)
-            throw std::runtime_error("cannot allocate main command buffer");
+            return VK_NULL_HANDLE;
 
         return command_buffer;
     }
@@ -202,23 +197,24 @@ namespace vulkan {
         VkDescriptorSetLayoutCreateInfo create_info{descriptor_set_layout_create_info(bindings.data(), bindings.size())};
         VkDescriptorSetLayout layout;
         if (vkCreateDescriptorSetLayout(dev, &create_info, nullptr, &layout) != VK_SUCCESS)
-            throw std::runtime_error("failed to create descriptor set layout\n");
+            return VK_NULL_HANDLE;
         return layout;
     }
 
-    VkDescriptorSet allocate_descriptor_set(VkDevice &dev, VkDescriptorPool &pool, VkDescriptorSetLayout &layout) {
+    VkDescriptorSet allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout) {
         VkDescriptorSetAllocateInfo create_info{descriptor_set_allocate_info(pool, &layout)};
         VkDescriptorSet descriptor_set;
-        if (vkAllocateDescriptorSets(dev, &create_info, &descriptor_set) != VK_SUCCESS)
-            throw std::runtime_error("failed to allocate descriptor set\n");
+        VkResult res = vkAllocateDescriptorSets(dev, &create_info, &descriptor_set);
+            return VK_NULL_HANDLE;
+        if (res != VK_SUCCESS)
         return descriptor_set;
     }
 
-    VkDescriptorPool create_descriptor_pool(VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets) {
+    VkDescriptorPool create_descriptor_pool(const VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets) {
         VkDescriptorPoolCreateInfo create_info{descriptor_pool_create_info(&pool_sizes[0], pool_sizes.size(), max_sets)};
         VkDescriptorPool descriptor_pool;
         if (vkCreateDescriptorPool(dev, &create_info, nullptr, &descriptor_pool) != VK_SUCCESS)
-            throw std::runtime_error("failed to create descriptor pool\n");
+            return VK_NULL_HANDLE;
         return descriptor_pool;
     }
 
@@ -226,7 +222,7 @@ namespace vulkan {
         VkFenceCreateInfo create_info{fence_create_info(flags)};
         VkFence fence;
         if (vkCreateFence(dev, &create_info, nullptr, &fence) != VK_SUCCESS)
-            throw std::runtime_error("failed to create fence\n");
+            return VK_NULL_HANDLE;
         return fence;
     }
 
@@ -234,7 +230,7 @@ namespace vulkan {
         VkSemaphoreCreateInfo create_info{semaphore_create_info(flags)};
         VkSemaphore semaphore;
         if (vkCreateSemaphore(dev, &create_info, nullptr, &semaphore) != VK_SUCCESS)
-            throw std::runtime_error("failed to create semaphore\n");
+            return VK_NULL_HANDLE;
         return semaphore;
     };
 
@@ -246,7 +242,7 @@ namespace vulkan {
                                                                    dependencies.data(), dependencies.size())};
         VkRenderPass render_pass;
         if (vkCreateRenderPass(dev, &create_info, nullptr, &render_pass) != VK_SUCCESS)
-            throw std::runtime_error("failed to create render pass\n");
+            return VK_NULL_HANDLE;
         return render_pass;
     }
 
@@ -254,7 +250,7 @@ namespace vulkan {
         VkPipelineLayoutCreateInfo create_info{pipeline_layout_create_info(set_layouts.data(), set_layouts.size(), push_constants.data(), push_constants.size())};
         VkPipelineLayout pipeline_layout;
         if(vkCreatePipelineLayout(dev, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) 
-            throw std::runtime_error("failed to create pipeline layout\n");
+            return VK_NULL_HANDLE;
         return pipeline_layout;
     }
 
@@ -262,7 +258,7 @@ namespace vulkan {
         VkComputePipelineCreateInfo create_info{compute_pipeline_create_info(pipeline_layout, compute_shader)};
         VkPipeline pipeline;
         if (vkCreateComputePipelines(dev, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline) != VK_SUCCESS)
-            throw std::runtime_error("failed to create compute pipeline\n");
+            return VK_NULL_HANDLE;
         return pipeline;
     }
 
@@ -270,7 +266,7 @@ namespace vulkan {
         VkShaderModuleCreateInfo create_info{shader_module_create_info(data.size(), &data[0])};
         VkShaderModule shader_module;
         if (vkCreateShaderModule(dev, &create_info, nullptr, &shader_module) != VK_SUCCESS)
-            throw std::runtime_error("failed to create shader module\n");
+            return VK_NULL_HANDLE;
         return shader_module;
     }
 }
