@@ -5,11 +5,13 @@
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_structs.hpp>
 
+#include <iostream>
+
 namespace core {
   vulkan_context::vulkan_context(std::vector<const char*> extensions, std::vector<const char*> device_extensions) :
     window(glfw::create_window(720, 720)), //i'll leave it by default so far
-    instance(vulkan::create_instance("Vulkan", extensions)),
-    surface(vulkan::create_surface(instance, window)),
+    instance(get_instance(extensions)),
+    surface(get_surface()),
     device(
       {
         .physical = vulkan::create_physical_device(instance, surface, device_extensions),
@@ -25,6 +27,22 @@ namespace core {
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyDevice(device.logical, nullptr);
     vkDestroyInstance(instance, nullptr);
+  }
+
+  VkInstance vulkan_context::get_instance(std::vector<const char*> extensions) {
+    auto inst = vulkan::create_instance("Vulkan", extensions);
+    if (inst.has_value()) return inst.value();
+    //error handling
+    std::cout << "failed to initialize instance\n";
+    std::exit(EXIT_FAILURE);
+  }
+
+  VkSurfaceKHR vulkan_context::get_surface() {
+    auto surf = vulkan::create_surface(instance, window);
+    if (surf.has_value()) return surf.value();
+    //error handling
+    std::cout << "failed to initialize surface\n";
+    std::exit(EXIT_FAILURE);
   }
 
   VkResult vulkan_context::create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT *create_info,

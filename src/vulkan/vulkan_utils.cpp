@@ -214,9 +214,9 @@ namespace vulkan {
         return VkImageBlit2 {
             .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
             .pNext = nullptr,
-            .srcOffsets[1] = {(int)src_extent.width, (int)src_extent.height, 1},  
-            .dstOffsets[1] = {(int)dst_extent.width, (int)dst_extent.height, 1},
             .srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+            .srcOffsets = {{0, 0, 0}, {(int)src_extent.width, (int)src_extent.height, 1}},
+            .dstOffsets = {{0, 0, 0}, {(int)dst_extent.width, (int)dst_extent.height, 1}}
         };
     }
 
@@ -225,8 +225,8 @@ namespace vulkan {
             .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
             .pNext = nullptr,
             .srcImage = src,
-            .dstImage = dst,
             .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            .dstImage = dst,
             .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             .regionCount = 1,
             .pRegions = &blit_region,
@@ -265,8 +265,8 @@ namespace vulkan {
     VkDescriptorSetLayoutBinding get_descriptor_set_layout_binding(VkDescriptorType type, VkShaderStageFlags shader_stage, uint32_t binding_point) {
         return VkDescriptorSetLayoutBinding {
             .binding = binding_point,
-            .descriptorCount = 1,
             .descriptorType = type,
+            .descriptorCount = 1,
             .stageFlags = shader_stage,
             .pImmutableSamplers = nullptr
         };
@@ -301,15 +301,15 @@ namespace vulkan {
         builder.create_info.subpass = subpass;
         builder.create_info.layout = layout;*/
 
-        builder.create_info = {
+        builder.create_info = VkGraphicsPipelineCreateInfo {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext = nullptr,
-            .basePipelineHandle = VK_NULL_HANDLE,
-            .basePipelineIndex = -1,
             .flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT,
+            .layout = layout,
             .renderPass = nullptr,
             .subpass = subpass,
-            .layout = layout
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = -1,
         };
         return builder;
     };
@@ -370,13 +370,13 @@ namespace vulkan {
         return VkSubmitInfo {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext = nullptr,
-            .commandBufferCount = 1,
-            .pCommandBuffers = &command_buffer,
             .waitSemaphoreCount = (uint32_t)wait_semaphores.size(),
             .pWaitSemaphores = wait_semaphores.data(),
+            .pWaitDstStageMask = &wait_stages,
+            .commandBufferCount = 1,
+            .pCommandBuffers = &command_buffer,
             .signalSemaphoreCount = (uint32_t)sig_semaphores.size(),
-            .pSignalSemaphores = sig_semaphores.data(),
-            .pWaitDstStageMask = &wait_stages
+            .pSignalSemaphores = sig_semaphores.data()
         };
     }
 
@@ -405,13 +405,13 @@ namespace vulkan {
         VkSubmitInfo submit_info {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .pNext = nullptr,
-            .commandBufferCount = (uint32_t)command_buffers.size(),
-            .pCommandBuffers = command_buffers.data(),
             .waitSemaphoreCount = (uint32_t)wait_semaphores.size(),
             .pWaitSemaphores = wait_semaphores.data(),
+            .pWaitDstStageMask = &stage_flag,
+            .commandBufferCount = (uint32_t)command_buffers.size(),
+            .pCommandBuffers = command_buffers.data(),
             .signalSemaphoreCount = (uint32_t)sig_semaphores.size(),
-            .pSignalSemaphores = sig_semaphores.data(),
-            .pWaitDstStageMask = &stage_flag
+            .pSignalSemaphores = sig_semaphores.data()
         };
         if(vkQueueSubmit(queue, 1, &submit_info, fence) != VK_SUCCESS)
             throw std::runtime_error("failed to submit draw command buffer!\n");

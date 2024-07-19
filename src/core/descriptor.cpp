@@ -38,11 +38,11 @@ namespace core {
       curr_pool = create_descriptor_pool(1000); //default pool size
 
     auto descriptor_set = vulkan::allocate_descriptor_set(context->device.logical, curr_pool, layout);
-
-    if (descriptor_set != VK_NULL_HANDLE)
-      return descriptor_set;
+    if (descriptor_set.has_value())
+      return descriptor_set.value();
     else {
-      curr_pool = create_descriptor_pool(1000);
+      if (descriptor_set.error() == VK_ERROR_FRAGMENTATION_EXT)
+        curr_pool = create_descriptor_pool(1000);
       return allocate_descriptor_set(layout);
     }
   }

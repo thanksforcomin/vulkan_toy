@@ -28,7 +28,6 @@ namespace core {
 
     private:
       void create_image_views();
-
       void recreate(); //for resizing
   };
   class vulkan_context {
@@ -57,6 +56,11 @@ namespace core {
       ~vulkan_context();
 
     private:
+      VkInstance get_instance(std::vector<const char*> extensions);
+      VkSurfaceKHR get_surface();
+      vulkan::vulkan_device get_device();
+      VmaAllocator get_allocator();
+
       VkResult create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT *create_info,
                                       const VkAllocationCallbacks *allocator,
                                       VkDebugUtilsMessengerEXT *messenger);

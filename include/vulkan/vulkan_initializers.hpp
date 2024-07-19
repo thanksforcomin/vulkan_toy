@@ -1,5 +1,6 @@
 #pragma once
 
+#include "include/utils/expected.hpp"
 #include <vulkan/vulkan_core.h>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -15,9 +16,9 @@ namespace glfw {
 }
 
 namespace vulkan {
-    VkSurfaceKHR create_surface(const VkInstance &inst, GLFWwindow *window);
+    std::expected<VkSurfaceKHR, VkResult> create_surface(const VkInstance &inst, GLFWwindow *window);
 
-    VkInstance create_instance(std::string application_name, std::vector<const char*> extensions = {});
+    std::expected<VkInstance, VkResult> create_instance(std::string application_name, std::vector<const char*> extensions = {});
 
     VkPhysicalDevice create_physical_device(const VkInstance &inst, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
 
@@ -40,7 +41,7 @@ namespace vulkan {
 
     VkDescriptorSetLayout create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings);
 
-    VkDescriptorSet allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout);
+    std::expected<VkDescriptorSet, VkResult> allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout);
 
     VkDescriptorPool create_descriptor_pool(const VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets);
 

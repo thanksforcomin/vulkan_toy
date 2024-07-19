@@ -2,6 +2,7 @@
 #include "include/vulkan/structs.hpp"
 #include "include/vulkan/vulkan_utils.hpp"
 #include "include/vulkan/vulkan_create_infos.hpp"
+#include "include/utils/expected.hpp"
 
 #include <iostream>
 #include <initializer_list>
@@ -25,17 +26,17 @@ namespace vulkan {
     /*
      * Creates a Vulkan surface for a GLFW window.
      */
-    VkSurfaceKHR create_surface(const VkInstance &inst, GLFWwindow *window) {
-        VkSurfaceKHR res;
-        if (glfwCreateWindowSurface(inst, window, nullptr, &res) != VK_SUCCESS)
-            throw std::runtime_error("failed to create window surface\n");
-        return res;
+   std::expected<VkSurfaceKHR, VkResult> create_surface(const VkInstance &inst, GLFWwindow *window) {
+        VkSurfaceKHR surface;
+        VkResult res = glfwCreateWindowSurface(inst, window, nullptr, &surface);
+        if (res != VK_SUCCESS) return std::unexpected(res);
+        return surface;
     }
 
     /*
      * Creates a Vulkan instance with the specified application name.
      */
-    VkInstance create_instance(std::string applicaion_name, std::vector<const char*> extensions) {
+    std::expected<VkInstance, VkResult> create_instance(std::string applicaion_name, std::vector<const char*> extensions) {
         std::vector<const char *> required_extensions = require_extensions();
         required_extensions.insert(required_extensions.end(), extensions.begin(), extensions.end());
         std::vector<const char *> validation_layers{"VK_LAYER_KHRONOS_validation"};
@@ -56,11 +57,10 @@ namespace vulkan {
 
         VkInstanceCreateInfo createInfo = vulkan::instance_create_info(&appInfo, validation_layers, required_extensions);
         VkInstance inst;
-
-        if(vkCreateInstance(&createInfo, nullptr, &inst) != VK_SUCCESS) 
-            throw std::runtime_error("something went wrong");
-
-        std::cout << "vulkan instance created\n";
+        
+        VkResult res = vkCreateInstance(&createInfo, nullptr, &inst);
+        if(res != VK_SUCCESS) 
+            return std::unexpected(res);
 
         return inst;
     };
@@ -201,12 +201,12 @@ namespace vulkan {
         return layout;
     }
 
-    VkDescriptorSet allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout) {
+    std::expected<VkDescriptorSet, VkResult> allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout) {
         VkDescriptorSetAllocateInfo create_info{descriptor_set_allocate_info(pool, &layout)};
         VkDescriptorSet descriptor_set;
         VkResult res = vkAllocateDescriptorSets(dev, &create_info, &descriptor_set);
-            return VK_NULL_HANDLE;
         if (res != VK_SUCCESS)
+            return std::unexpected<VkResult>(res);
         return descriptor_set;
     }
 

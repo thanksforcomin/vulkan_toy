@@ -1,5 +1,8 @@
 #include <include/utils/utils.hpp>
 
+#include <fstream>
+#include <iostream>
+
 namespace utils {
     std::vector<char> read_from_file(std::string filepath) {
         std::ifstream file(filepath, std::ios::ate | std::ios::binary);
