@@ -26,7 +26,7 @@ namespace vulkan {
     /*
      * Creates a Vulkan surface for a GLFW window.
      */
-   std::expected<VkSurfaceKHR, VkResult> create_surface(const VkInstance &inst, GLFWwindow *window) {
+   std::expected<VkSurfaceKHR, VkRes> create_surface(const VkInstance &inst, GLFWwindow *window) {
         VkSurfaceKHR surface;
         VkResult res = glfwCreateWindowSurface(inst, window, nullptr, &surface);
         if (res != VK_SUCCESS) return std::unexpected(res);
@@ -36,7 +36,7 @@ namespace vulkan {
     /*
      * Creates a Vulkan instance with the specified application name.
      */
-    std::expected<VkInstance, VkResult> create_instance(std::string applicaion_name, std::vector<const char*> extensions) {
+    std::expected<VkInstance, VkRes> create_instance(std::string applicaion_name, std::vector<const char*> extensions) {
         std::vector<const char *> required_extensions = require_extensions();
         required_extensions.insert(required_extensions.end(), extensions.begin(), extensions.end());
         std::vector<const char *> validation_layers{"VK_LAYER_KHRONOS_validation"};
@@ -68,12 +68,12 @@ namespace vulkan {
     /*
      * Creates a physical device for Vulkan rendering.
      */
-    VkPhysicalDevice create_physical_device(const VkInstance &inst, const VkSurfaceKHR& surface, std::vector<const char*>& device_extensions) {
+    VkPhysicalDevice pick_physical_device(const VkInstance &inst, const VkSurfaceKHR& surface, std::vector<const char*>& device_extensions) {
         unsigned int device_count = 0;
         vkEnumeratePhysicalDevices(inst, &device_count, nullptr);
 
         if (device_count == 0)
-            std::runtime_error("no available devices, closing");
+            throw std::runtime_error("no available devices, closing");
 
         std::vector<VkPhysicalDevice> available_devices(device_count);
         vkEnumeratePhysicalDevices(inst, &device_count, available_devices.data());
@@ -96,7 +96,7 @@ namespace vulkan {
     /**
     * Creates a logical device for Vulkan graphics rendering.
     */
-    VkDevice create_logical_device(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions) {
+    std::expected<VkDevice, VkRes> create_logical_device(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions) {
         queue_family_indicies queue_family = find_queue_family(dev, surface);
         std::set<uint32_t> unique_family_queues = {queue_family.graphics_family.value(), queue_family.present_family.value()};
 
@@ -116,27 +116,29 @@ namespace vulkan {
         create_info.pNext = &dynamic_rendering_features;
         
         VkDevice log_dev;
-        if (vkCreateDevice(dev, &create_info, nullptr, &log_dev) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        VkResult res = vkCreateDevice(dev, &create_info, nullptr, &log_dev);
+        if (res != VK_SUCCESS)
+            return std::unexpected(res);
 
         return log_dev;
     }
 
-    VkQueue create_queue(VkDevice &dev, uint32_t queue_family_index) {
+    VkQueue get_queue(VkDevice &dev, uint32_t queue_family_index) {
         VkQueue queue;
         vkGetDeviceQueue(dev, queue_family_index, 0, &queue);
         return queue;
     }
 
-    VmaAllocator create_allocator(const vulkan_device& device, const VkInstance& instance) {
+    std::expected<VmaAllocator, VkRes> create_allocator(const device& device, const VkInstance& instance) {
         VmaAllocator allocator;
         VmaAllocatorCreateInfo allocator_info = allocator_create_info(instance, device);
-        if(vmaCreateAllocator(&allocator_info, &allocator) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        VkResult res = vmaCreateAllocator(&allocator_info, &allocator);
+        if(res != VK_SUCCESS)
+            return std::unexpected(res);
         return allocator;
     }
 
-    VkSwapchainKHR create_swap_chain(const vulkan_device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
+    std::expected<VkSwapchainKHR, VkRes> create_swap_chain(const device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
                                      const GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode) {
 
         VkSwapchainCreateInfoKHR create_info{ 
@@ -152,52 +154,51 @@ namespace vulkan {
         };
 
         VkSwapchainKHR swap_chain;
-        if (vkCreateSwapchainKHR(vulkan_dev.logical, &create_info, nullptr, &swap_chain) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        VkResult res = vkCreateSwapchainKHR(vulkan_dev.logical, &create_info, nullptr, &swap_chain);
+        if (res != VK_SUCCESS)
+            return std::unexpected(res);
         return swap_chain;
     }
 
-    VkImage create_image(VkDevice &dev, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent) {
+    std::expected<VkImage, VkRes> create_image(VkDevice &dev, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent) {
         VkImage img;
         VkImageCreateInfo create_info{image_create_info(format, usage, extent)};
-        if (vkCreateImage(dev, &create_info, nullptr, &img) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        VkResult res = vkCreateImage(dev, &create_info, nullptr, &img);
+        if (res != VK_SUCCESS)
+            return std::unexpected(res);
         return img;
     }
 
-    VkImageView create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format)
+    std::expected<VkImageView, VkRes> create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format)
     {
         VkImageView image_view;
         VkImageViewCreateInfo create_info(image_view_create_info(image, format));
-        if (vkCreateImageView(dev, &create_info, nullptr, &image_view) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        VkRes res = vkCreateImageView(dev, &create_info, nullptr, &image_view);
+        if (res != VK_SUCCESS) return std::unexpected(res);
         return image_view;
     }
 
-    VkCommandPool create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index) {
+    std::expected<VkCommandPool, VkRes> create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index) {
         VkCommandPoolCreateInfo create_info{command_pool_create_info(queue_family_index, flags)};
         VkCommandPool command_pool;
-        
-        if(vkCreateCommandPool(dev, &create_info, nullptr, &command_pool) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        VkRes res = vkCreateCommandPool(dev, &create_info, nullptr, &command_pool);
+        if (res != VK_SUCCESS) return std::unexpected(res);
         return command_pool;
     }
 
-    VkCommandBuffer allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count) {
+    std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count) {
         VkCommandBufferAllocateInfo create_info{command_buffer_allocate_info(command_pool, level, count)};
         VkCommandBuffer command_buffer;
-
-        if (vkAllocateCommandBuffers(dev, &create_info, &command_buffer) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
-
+        if (VkRes res = vkAllocateCommandBuffers(dev, &create_info, &command_buffer); res != VK_SUCCESS)
+            return std::unexpected(res);
         return command_buffer;
     }
 
-    VkDescriptorSetLayout create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings) {
+     std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings) {
         VkDescriptorSetLayoutCreateInfo create_info{descriptor_set_layout_create_info(bindings.data(), bindings.size())};
         VkDescriptorSetLayout layout;
-        if (vkCreateDescriptorSetLayout(dev, &create_info, nullptr, &layout) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateDescriptorSetLayout(dev, &create_info, nullptr, &layout); res != VK_SUCCESS)
+            return std::unexpected(res);
         return layout;
     }
 
@@ -210,63 +211,63 @@ namespace vulkan {
         return descriptor_set;
     }
 
-    VkDescriptorPool create_descriptor_pool(const VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets) {
+    std::expected<VkDescriptorPool, VkRes> create_descriptor_pool(const VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets) {
         VkDescriptorPoolCreateInfo create_info{descriptor_pool_create_info(&pool_sizes[0], pool_sizes.size(), max_sets)};
         VkDescriptorPool descriptor_pool;
-        if (vkCreateDescriptorPool(dev, &create_info, nullptr, &descriptor_pool) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateDescriptorPool(dev, &create_info, nullptr, &descriptor_pool); res != VK_SUCCESS)
+            return std::unexpected(res);
         return descriptor_pool;
     }
 
-    VkFence create_fence(VkDevice &dev, VkFenceCreateFlags flags) {
+    std::expected<VkFence, VkRes> create_fence(VkDevice &dev, VkFenceCreateFlags flags) {
         VkFenceCreateInfo create_info{fence_create_info(flags)};
         VkFence fence;
-        if (vkCreateFence(dev, &create_info, nullptr, &fence) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateFence(dev, &create_info, nullptr, &fence); res != VK_SUCCESS)
+            return std::unexpected(res);
         return fence;
     }
 
-    VkSemaphore create_semaphore(VkDevice &dev, VkSemaphoreCreateFlags flags) {
+    std::expected<VkSemaphore, VkRes> create_semaphore(VkDevice &dev, VkSemaphoreCreateFlags flags) {
         VkSemaphoreCreateInfo create_info{semaphore_create_info(flags)};
         VkSemaphore semaphore;
-        if (vkCreateSemaphore(dev, &create_info, nullptr, &semaphore) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateSemaphore(dev, &create_info, nullptr, &semaphore); res != VK_SUCCESS)
+            return std::unexpected(res);
         return semaphore;
     };
 
-    VkRenderPass create_render_pass(VkDevice &dev, std::vector<VkAttachmentDescription> attachments, 
+    std::expected<VkRenderPass, VkRes> create_render_pass(VkDevice &dev, std::vector<VkAttachmentDescription> attachments, 
                                     std::vector<VkSubpassDescription> subpasses, std::vector<VkSubpassDependency> dependencies) 
     {
         VkRenderPassCreateInfo create_info{render_pass_create_info(attachments.data(), attachments.size(), 
                                                                    subpasses.data(), subpasses.size(), 
                                                                    dependencies.data(), dependencies.size())};
         VkRenderPass render_pass;
-        if (vkCreateRenderPass(dev, &create_info, nullptr, &render_pass) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateRenderPass(dev, &create_info, nullptr, &render_pass); res != VK_SUCCESS)
+            return std::unexpected(res);
         return render_pass;
     }
 
-    VkPipelineLayout create_pipeline_layout(VkDevice &dev, std::vector<VkDescriptorSetLayout> set_layouts, std::vector<VkPushConstantRange> push_constants) {
+   std::expected<VkPipelineLayout, VkRes> create_pipeline_layout(VkDevice &dev, std::vector<VkDescriptorSetLayout> set_layouts, std::vector<VkPushConstantRange> push_constants) {
         VkPipelineLayoutCreateInfo create_info{pipeline_layout_create_info(set_layouts.data(), set_layouts.size(), push_constants.data(), push_constants.size())};
         VkPipelineLayout pipeline_layout;
-        if(vkCreatePipelineLayout(dev, &create_info, nullptr, &pipeline_layout) != VK_SUCCESS) 
-            return VK_NULL_HANDLE;
+        if(VkRes res = vkCreatePipelineLayout(dev, &create_info, nullptr, &pipeline_layout); res != VK_SUCCESS) 
+            return std::unexpected(res);
         return pipeline_layout;
     }
 
-    VkPipeline create_compute_pipeline(VkDevice &dev, VkPipelineLayout &pipeline_layout, VkPipelineShaderStageCreateInfo &compute_shader) {
+    std::expected<VkPipeline, VkRes> create_compute_pipeline(VkDevice &dev, VkPipelineLayout &pipeline_layout, VkPipelineShaderStageCreateInfo &compute_shader) {
         VkComputePipelineCreateInfo create_info{compute_pipeline_create_info(pipeline_layout, compute_shader)};
         VkPipeline pipeline;
-        if (vkCreateComputePipelines(dev, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateComputePipelines(dev, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline); res != VK_SUCCESS)
+            return std::unexpected(res);
         return pipeline;
     }
 
-    VkShaderModule create_chader_module(VkDevice &dev, std::vector<char>&& data) {
+    std::expected<VkShaderModule, VkRes> create_chader_module(VkDevice &dev, std::vector<char>&& data) {
         VkShaderModuleCreateInfo create_info{shader_module_create_info(data.size(), &data[0])};
         VkShaderModule shader_module;
-        if (vkCreateShaderModule(dev, &create_info, nullptr, &shader_module) != VK_SUCCESS)
-            return VK_NULL_HANDLE;
+        if (VkRes res = vkCreateShaderModule(dev, &create_info, nullptr, &shader_module); res != VK_SUCCESS)
+            return std::unexpected(res);
         return shader_module;
     }
 }

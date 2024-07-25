@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <vector>
+#include <cstdio>
 
 namespace vulkan {
     struct queue_family_indicies {
@@ -18,7 +19,7 @@ namespace vulkan {
         bool is_complete() { return (graphics_family.has_value() && present_family.has_value()) && compute_family.has_value() && transfer_family.has_value(); }
     };
 
-    struct vulkan_device {
+    struct device {
         VkPhysicalDevice physical;
         VkDevice logical;
     };  

@@ -14,13 +14,13 @@ namespace core {
     surface(get_surface()),
     device(
       {
-        .physical = vulkan::create_physical_device(instance, surface, device_extensions),
-        .logical = vulkan::create_logical_device(device.physical, surface, device_extensions)
+        .physical = vulkan::pick_physical_device(instance, surface, device_extensions),
+        .logical = get_device(device_extensions)
       }
     ),
     queue_indicies(vulkan::find_queue_family(device.physical, surface)),
     swapchain(this), 
-    allocator(vulkan::create_allocator(device, instance))
+    allocator(get_allocator())
   { }
 
   vulkan_context::~vulkan_context() {
@@ -42,6 +42,22 @@ namespace core {
     if (surf.has_value()) return surf.value();
     //error handling
     std::cout << "failed to initialize surface\n";
+    std::exit(EXIT_FAILURE);
+  }
+
+  VkDevice vulkan_context::get_device(std::vector<const char*> device_extensions) {
+    auto dev = vulkan::create_logical_device(device.physical, surface, device_extensions); 
+    if (dev.has_value()) return dev.value();
+    //error handling
+    std::cout << "failed to initialize device\n";
+    std::exit(EXIT_FAILURE);
+  }
+
+  VmaAllocator vulkan_context::get_allocator() {
+    auto alloca = vulkan::create_allocator(device, instance);
+    if (alloca.has_value()) return alloca.value();
+    //error handling
+    std::cout << "failed to initialize allocator\n";
     std::exit(EXIT_FAILURE);
   }
 
@@ -92,7 +108,15 @@ namespace core {
     VkSurfaceFormatKHR surface_format = vulkan::choose_format(support.formats);
     format = surface_format.format;
     extent = vulkan::choose_extent(support.capabilities, context->window);
-    swapchain_object = vulkan::create_swap_chain(context->device, 
+    swapchain_object = get_swapchain(support, surface_format);
+  }
+
+  swap_chain::~swap_chain() {
+    vkDestroySwapchainKHR(context->device.logical, swapchain_object, nullptr);
+  }
+
+  VkSwapchainKHR swap_chain::get_swapchain(vulkan::swap_chain_support_details& support, VkSurfaceFormatKHR& surface_format) {
+    auto swp_chain = vulkan::create_swap_chain(context->device, 
                                          context->surface, 
                                          context->queue_indicies, 
                                          support, 
@@ -100,10 +124,11 @@ namespace core {
                                          surface_format, 
                                          extent, 
                                          vulkan::choose_present_mode(support.present_modes));
-  }
 
-  swap_chain::~swap_chain() {
-    vkDestroySwapchainKHR(context->device.logical, swapchain_object, nullptr);
+    if (swp_chain.has_value()) return swp_chain.value();
+    //error handling
+    std::cout << "failed to initialize swap chain\n";
+    std::exit(EXIT_FAILURE);
   }
 
   VkImageView swap_chain::get_image_view(uint32_t index) {

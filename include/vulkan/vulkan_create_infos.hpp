@@ -54,7 +54,7 @@ namespace vulkan {
         };
     }
 
-    inline VmaAllocatorCreateInfo allocator_create_info(const VkInstance& instance, const vulkan_device& device) {
+    inline VmaAllocatorCreateInfo allocator_create_info(const VkInstance& instance, const device& device) {
         return {
             .flags = 0,
             .physicalDevice = device.physical,

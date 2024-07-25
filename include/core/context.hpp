@@ -27,6 +27,7 @@ namespace core {
       VkImageView get_image_view(uint32_t index);
 
     private:
+      VkSwapchainKHR get_swapchain(vulkan::swap_chain_support_details& support, VkSurfaceFormatKHR& surface_format);
       void create_image_views();
       void recreate(); //for resizing
   };
@@ -35,7 +36,7 @@ namespace core {
       GLFWwindow* window = nullptr;
       const VkInstance instance;
       const VkSurfaceKHR surface;
-      const vulkan::vulkan_device device;
+      const vulkan::device device;
       const vulkan::queue_family_indicies queue_indicies;
       const swap_chain swapchain;
       const VmaAllocator allocator;
@@ -58,7 +59,7 @@ namespace core {
     private:
       VkInstance get_instance(std::vector<const char*> extensions);
       VkSurfaceKHR get_surface();
-      vulkan::vulkan_device get_device();
+      VkDevice get_device(std::vector<const char*> device_extensions);
       VmaAllocator get_allocator();
 
       VkResult create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT *create_info,

@@ -16,45 +16,50 @@ namespace glfw {
 }
 
 namespace vulkan {
-    std::expected<VkSurfaceKHR, VkResult> create_surface(const VkInstance &inst, GLFWwindow *window);
+    using VkRes = VkResult;
 
-    std::expected<VkInstance, VkResult> create_instance(std::string application_name, std::vector<const char*> extensions = {});
+    std::expected<VkSurfaceKHR, VkRes> create_surface(const VkInstance &inst, GLFWwindow *window);
 
-    VkPhysicalDevice create_physical_device(const VkInstance &inst, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
+    std::expected<VkInstance, VkRes> create_instance(std::string application_name, std::vector<const char*> extensions = {});
 
-    VkDevice create_logical_device(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
+    //todo: transfer to vulkan utils
+    VkPhysicalDevice pick_physical_device(const VkInstance &inst, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
 
-    VkQueue create_queue(VkDevice &dev, uint32_t queue_family_index);
+    std::expected<VkDevice, VkRes> create_logical_device(const VkPhysicalDevice &dev, const VkSurfaceKHR &surface, std::vector<const char*>& device_extensions);
     
-    VmaAllocator create_allocator(const vulkan_device& device, const VkInstance& instance);
+    //todo: transfer to vulkan utils
+    VkQueue get_queue(VkDevice &dev, uint32_t queue_family_index);
     
-    VkSwapchainKHR create_swap_chain(const vulkan_device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
+    std::expected<VmaAllocator, VkRes> create_allocator(const device& device, const VkInstance& instance);
+    
+    std::expected<VkSwapchainKHR, VkRes> create_swap_chain(const device &vulkan_dev, const VkSurfaceKHR &surface, queue_family_indicies indicies, swap_chain_support_details support_details, 
                                      const GLFWwindow *window, VkSurfaceFormatKHR format, VkExtent2D extent, VkPresentModeKHR present_mode);
                                     
-    VkImage create_image(VkDevice &dev, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent);
+    std::expected<VkImage, VkRes> create_image(VkDevice &dev, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent);
 
-    VkImageView create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format);
+    std::expected<VkImageView, VkRes> create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format);
 
-    VkCommandPool create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index);
+    std::expected<VkCommandPool, VkRes> create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index);
 
-    VkCommandBuffer allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count = 1);
+    std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count = 1);
 
-    VkDescriptorSetLayout create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings);
+    std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings);
 
-    std::expected<VkDescriptorSet, VkResult> allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout);
+    std::expected<VkDescriptorSet, VkRes> allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout);
 
-    VkDescriptorPool create_descriptor_pool(const VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets);
+    std::expected<VkDescriptorPool, VkRes> create_descriptor_pool(const VkDevice &dev, std::vector<VkDescriptorPoolSize> pool_sizes, uint32_t max_sets);
 
-    VkFence create_fence(VkDevice &dev, VkFenceCreateFlags flags = VK_FENCE_CREATE_SIGNALED_BIT);
+    std::expected<VkFence, VkRes> create_fence(VkDevice &dev, VkFenceCreateFlags flags = VK_FENCE_CREATE_SIGNALED_BIT);
 
-    VkSemaphore create_semaphore(VkDevice &dev, VkSemaphoreCreateFlags flags = 0);
+    std::expected<VkSemaphore, VkRes> create_semaphore(VkDevice &dev, VkSemaphoreCreateFlags flags = 0);
 
-    VkRenderPass create_render_pass(VkDevice &dev, std::vector<VkAttachmentDescription> attachments, 
+    //TODO: delete this
+    std::expected<VkRenderPass, VkRes> create_render_pass(VkDevice &dev, std::vector<VkAttachmentDescription> attachments, 
                                     std::vector<VkSubpassDescription> subpasses, std::vector<VkSubpassDependency> dependencies = {});
 
-    VkPipelineLayout create_pipeline_layout(VkDevice &dev, std::vector<VkDescriptorSetLayout> set_layouts, std::vector<VkPushConstantRange> push_constants = {});
+    std::expected<VkPipelineLayout, VkRes> create_pipeline_layout(VkDevice &dev, std::vector<VkDescriptorSetLayout> set_layouts, std::vector<VkPushConstantRange> push_constants = {});
 
-    VkPipeline create_compute_pipeline(VkDevice &dev, VkPipelineLayout &pipeline_layout, VkPipelineShaderStageCreateInfo &compute_shader);
+    std::expected<VkPipeline, VkRes> create_compute_pipeline(VkDevice &dev, VkPipelineLayout &pipeline_layout, VkPipelineShaderStageCreateInfo &compute_shader);
 
-    VkShaderModule create_chader_module(VkDevice &dev, std::vector<char>&& data);
+    std::expected<VkShaderModule, VkRes> create_chader_module(VkDevice &dev, std::vector<char>&& data);
 }
