@@ -1,6 +1,7 @@
 #include "include/core/descriptor.hpp"
 #include "include/core/context.hpp"
 #include "include/vulkan/vulkan_initializers.hpp"
+#include "include/vulkan/vulkan_utils.hpp"
 #include <chrono>
 #include <vector>
 #include <vulkan/vulkan_core.h>
@@ -30,7 +31,14 @@ namespace core {
       pool_sizes.push_back({type, count * size});
     }
 
-    return vulkan::create_descriptor_pool(context->device.logical, pool_sizes, count);
+    auto pool = vulkan::create_descriptor_pool(context->device.logical, pool_sizes, count);
+    if (pool.has_value())
+      return pool.value();
+    else {
+      if (pool.error() == VK_ERROR_FRAGMENTATION_EXT)
+        return create_descriptor_pool(count);
+      return VK_NULL_HANDLE;
+    }
   }
 
   VkDescriptorSet descriptor_allocator::allocate_descriptor_set(VkDescriptorSetLayout &layout) {
@@ -45,5 +53,19 @@ namespace core {
         curr_pool = create_descriptor_pool(1000);
       return allocate_descriptor_set(layout);
     }
+  }
+}
+
+namespace core {
+  descriptor_builder& descriptor_builder::add_buffer(uint32_t binding, VkDescriptorBufferInfo *buffer_info, VkDescriptorType type, VkShaderStageFlags flags) {
+    bindings.push_back(vulkan::get_descriptor_set_layout_binding(type, flags, binding));
+    writes.push_back(vulkan::get_descriptor_write_info(type, VK_NULL_HANDLE, binding, buffer_info));
+    return *this;
+  }
+
+  descriptor_builder& descriptor_builder::add_image(uint32_t binding, VkDescriptorImageInfo *image_info, VkDescriptorType type, VkShaderStageFlags flags) {
+    bindings.push_back(vulkan::get_descriptor_set_layout_binding(type, flags, binding));
+    writes.push_back(vulkan::get_descriptor_write_info(type, VK_NULL_HANDLE, binding, nullptr, image_info));
+    return *this;
   }
 }

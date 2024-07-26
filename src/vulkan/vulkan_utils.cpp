@@ -2,6 +2,7 @@
 #include "include/vulkan/vulkan_create_infos.hpp"
 
 #include <set>
+#include <cstdio>
 #include <string>
 #include <cstring>
 #include <limits>
@@ -280,13 +281,14 @@ namespace vulkan {
         };
     };
 
-    VkWriteDescriptorSet get_descriptor_write_info(VkDescriptorType type, VkDescriptorSet dst_set, uint32_t binding, VkDescriptorBufferInfo &buffer_info) {
+    VkWriteDescriptorSet get_descriptor_write_info(VkDescriptorType type, VkDescriptorSet dst_set, uint32_t binding, VkDescriptorBufferInfo *buffer_info, VkDescriptorImageInfo *image_info) {
         return {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .dstSet = dst_set,
             .dstBinding = binding,
             .descriptorCount = 1,
-            .pBufferInfo = &buffer_info
+            .pImageInfo = image_info,
+            .pBufferInfo = buffer_info
         };
     };
 

@@ -137,6 +137,6 @@ namespace core {
 
   void swap_chain::create_image_views() {
     for(VkImage& image : images) 
-      image_views.push_back(vulkan::create_image_view(context->device.logical, image, format));
+      image_views.push_back(vulkan::create_image_view(context->device.logical, image, format).value());
   }
 }

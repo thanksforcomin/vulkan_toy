@@ -49,7 +49,8 @@ namespace vulkan {
 
     VkDescriptorBufferInfo get_buffer_info(VkBuffer &buffer, VkDeviceSize size, uint32_t offset = 0);
 
-    VkWriteDescriptorSet get_descriptor_write_info(VkDescriptorType type, VkDescriptorSet dst_set, uint32_t binding, VkDescriptorBufferInfo &buffer_info);
+    VkWriteDescriptorSet get_descriptor_write_info(VkDescriptorType type, VkDescriptorSet dst_set, uint32_t binding, 
+                                                   VkDescriptorBufferInfo *buffer_info = nullptr, VkDescriptorImageInfo *image_info = nullptr);
 
     pipeline::pipeline_builder begin_pipeline_builder(VkPipelineLayout &layout, uint32_t subpass = 0, std::vector<VkPushConstantRange> push_constants = {});
 
