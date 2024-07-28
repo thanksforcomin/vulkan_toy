@@ -194,7 +194,7 @@ namespace vulkan {
         return command_buffer;
     }
 
-     std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings) {
+     std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(const VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings) {
         VkDescriptorSetLayoutCreateInfo create_info{descriptor_set_layout_create_info(bindings.data(), bindings.size())};
         VkDescriptorSetLayout layout;
         if (VkRes res = vkCreateDescriptorSetLayout(dev, &create_info, nullptr, &layout); res != VK_SUCCESS)

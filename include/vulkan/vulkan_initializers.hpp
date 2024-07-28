@@ -43,7 +43,7 @@ namespace vulkan {
 
     std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count = 1);
 
-    std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings);
+    std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(const VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings);
 
     std::expected<VkDescriptorSet, VkRes> allocate_descriptor_set(const VkDevice &dev, const VkDescriptorPool &pool, VkDescriptorSetLayout &layout);
 
