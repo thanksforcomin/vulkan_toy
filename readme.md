@@ -6,4 +6,4 @@ don't.
 # Dependencies:
 vulkan?
 glfw
-clang (gcc soon)
+gcc

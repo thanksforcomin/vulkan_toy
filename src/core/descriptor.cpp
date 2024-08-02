@@ -25,14 +25,13 @@ namespace core {
     auto layout = vulkan::create_descriptor_set_layout(allocator->context->device.logical, bindings);
     if (!layout.has_value()) return VK_NULL_HANDLE;
 
-    auto dst_set = vulkan::allocate_descriptor_set(allocator->context->device.logical, alloca, layout.value());
-    if (!dst_set.has_value()) return VK_NULL_HANDLE;
+    VkDescriptorSet dst_set = allocator->allocate_descriptor_set(layout.value());
     
-    for (auto& write : writes) write.dstSet = dst_set.value();
+    for (auto& write : writes) write.dstSet = dst_set;
 
     vkUpdateDescriptorSets(allocator->context->device.logical, writes.size(), writes.data(), 0, nullptr);
 
-    return dst_set.value();
+    return dst_set;
   }
 }
 

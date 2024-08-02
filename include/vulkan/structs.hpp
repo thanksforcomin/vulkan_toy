@@ -9,6 +9,10 @@
 #include <vector>
 #include <cstdio>
 
+#ifndef FRAMES_IN_FLIGHT
+    #define FRAMES_IN_FLIGHT 2
+#endif
+
 namespace vulkan {
     struct queue_family_indicies {
         std::optional<uint32_t> graphics_family;
@@ -45,4 +49,7 @@ namespace vulkan {
         VmaAllocation allocation;
         VmaAllocator *allocator;
     };
+
+    using allocated_buffers = std::array<allocated_buffer, FRAMES_IN_FLIGHT>;
+    using allocated_images = std::array<allocated_image, FRAMES_IN_FLIGHT>;
 }

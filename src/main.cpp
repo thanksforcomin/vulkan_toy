@@ -15,7 +15,11 @@ int main() {
                                               VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME};
 
   core::vulkan_context context(instance_extensions, device_extensions);
-  std::cout << "wrapping up\n";
+  std::cout << "runnin\n";
+
+  while(!glfwWindowShouldClose(context.window)) {
+    glfwPollEvents();
+  }
 
   return 0;
 }
