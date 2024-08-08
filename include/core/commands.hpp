@@ -2,6 +2,8 @@
 
 #include "include/core/context.hpp"
 
+#include <unordered_map>
+
 namespace core {
   using VkCommandPools = std::array<VkCommandPool, FRAMES_IN_FLIGHT>;
   using VkCommandBuffers = std::array<VkCommandBuffer, FRAMES_IN_FLIGHT>;
@@ -9,7 +11,8 @@ namespace core {
   class command_dispatcher {
   private:
     vulkan_context *context;
-    std::vector<VkCommandBuffer> command_buffers;
+    //std::vector<VkCommandBuffer> command_buffers;
+    std::unordered_map<VkCommandBuffer, bool> command_buffers; 
     VkCommandPool command_pool;
 
   public:

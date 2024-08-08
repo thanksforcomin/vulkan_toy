@@ -3,6 +3,7 @@
 #include "include/vulkan/vulkan_utils.hpp"
 
 #include <iostream>
+#include <span>
 
 namespace core {
   command_dispatcher::command_dispatcher(vulkan_context *context) : context(context) {
@@ -17,19 +18,27 @@ namespace core {
   }
 
   command_dispatcher::~command_dispatcher() {
-    vkFreeCommandBuffers(context->device.logical, command_pool, command_buffers.size(), command_buffers.data());
+    for (auto& it : command_buffers) {
+      vkFreeCommandBuffers(context->device.logical, command_pool, 1, &it.first);
+    }
     vkDestroyCommandPool(context->device.logical, command_pool, nullptr);
   }
 
 
   //TODO: deleting data from vectors is kinda inefficient, especially every frame. make it more efficient
   VkCommandBuffer command_dispatcher::get_command_buffer() {
-    if (!command_buffers.empty()) {
-      VkCommandBuffer cmd_buf = command_buffers.back();
-      command_buffers.pop_back();
-      return cmd_buf;
+    //if no available command buffers, create a new one
+    if (command_buffers.empty()) {
+      return command_buffers.insert({create_command_buffer(), false}).first->first;
     } else {
-      return create_command_buffer();
+      for (auto& it : command_buffers) {
+        if (it.second) {
+          it.second = false;
+          return it.first;
+        }
+      }
+      //if we haven't found an unused command buffer, create a new one
+      return command_buffers.insert({create_command_buffer(), false}).first->first;
     }
   }
 
@@ -39,7 +48,13 @@ namespace core {
       std::cout << "failed to submit draw command buffer\n";
       std::exit(EXIT_FAILURE);
     }
-    if (reuse) command_buffers.insert(command_buffers.begin(), submit_info->pCommandBuffers, submit_info->pCommandBuffers + submit_info->commandBufferCount * sizeof(VkCommandBuffer));
+    if (reuse) {
+      for (const VkCommandBuffer& it : std::span<const VkCommandBuffer>(submit_info->pCommandBuffers, submit_info->commandBufferCount)) {
+        //i am not sure about this
+        VkCommandBuffer bfr = it;
+        command_buffers[bfr] = true;
+      }
+    }
   }
 
   VkCommandBuffer command_dispatcher::create_command_buffer() {
