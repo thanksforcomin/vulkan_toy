@@ -178,7 +178,7 @@ namespace vulkan {
         return image_view;
     }
 
-    std::expected<VkCommandPool, VkRes> create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index) {
+    std::expected<VkCommandPool, VkRes> create_command_pool(const VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index) {
         VkCommandPoolCreateInfo create_info{command_pool_create_info(queue_family_index, flags)};
         VkCommandPool command_pool;
         VkRes res = vkCreateCommandPool(dev, &create_info, nullptr, &command_pool);
@@ -186,7 +186,7 @@ namespace vulkan {
         return command_pool;
     }
 
-    std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count) {
+    std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(const VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count) {
         VkCommandBufferAllocateInfo create_info{command_buffer_allocate_info(command_pool, level, count)};
         VkCommandBuffer command_buffer;
         if (VkRes res = vkAllocateCommandBuffers(dev, &create_info, &command_buffer); res != VK_SUCCESS)

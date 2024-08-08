@@ -39,9 +39,9 @@ namespace vulkan {
 
     std::expected<VkImageView, VkRes> create_image_view(const VkDevice &dev, VkImage &image, VkFormat &format);
 
-    std::expected<VkCommandPool, VkRes> create_command_pool(VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index);
+    std::expected<VkCommandPool, VkRes> create_command_pool(const VkDevice &dev, VkCommandPoolCreateFlags flags, uint32_t queue_family_index);
 
-    std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count = 1);
+    std::expected<VkCommandBuffer, VkRes> allocate_command_buffer(const VkDevice &dev, VkCommandPool &command_pool, VkCommandBufferLevel level, uint32_t count = 1);
 
     std::expected<VkDescriptorSetLayout, VkRes> create_descriptor_set_layout(const VkDevice &dev, std::vector<VkDescriptorSetLayoutBinding> &bindings);
 

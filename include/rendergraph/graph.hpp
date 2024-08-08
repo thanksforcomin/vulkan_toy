@@ -6,10 +6,15 @@
 
 #include "include/core/context.hpp"
 
-namespace rendergraph
-{
+namespace rendergraph {
   struct node
   {
+    enum struct node_type {
+      transfer, 
+      compute, 
+      graphic
+    } type; 
+
     std::string name;
     std::vector<node*> children;
 
@@ -21,7 +26,10 @@ namespace rendergraph
 
   class framegraph {
     //TODO: make it make more sense
-    std::vector<node> nodes;
+    private:
+      core::vulkan_context* context;
+      std::vector<node> nodes;
+      std::vector<VkSemaphore> semaphores;
 
     public:
       framegraph(core::vulkan_context* context);

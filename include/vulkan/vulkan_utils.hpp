@@ -68,8 +68,6 @@ namespace vulkan {
                                  uint32_t& wait_stages);
 
     VkSubmitInfo get_submit_info(VkCommandBuffer &command_buffer);
-
-    void submit_command_buffer(const VkQueue& queue, VkSubmitInfo* submit_info, VkFence& fence);
     
     void submit_frame(std::vector<VkCommandBuffer>&& command_buffers,
                       std::vector<VkSemaphore>&& wait_semaphores,

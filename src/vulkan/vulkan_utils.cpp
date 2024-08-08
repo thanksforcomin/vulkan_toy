@@ -391,11 +391,6 @@ namespace vulkan {
         };
     }
 
-    void submit_command_buffer(const VkQueue& queue, VkSubmitInfo* submit_info, VkFence& fence) {
-        if(vkQueueSubmit(queue, 1, submit_info, fence) != VK_SUCCESS)
-            throw std::runtime_error("failed to submit draw command buffer!\n");
-    }
-
     void submit_frame(std::vector<VkCommandBuffer>&& command_buffers,
                       std::vector<VkSemaphore>&& wait_semaphores,
                       std::vector<VkSemaphore>&& sig_semaphores,
