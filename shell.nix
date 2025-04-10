@@ -3,7 +3,14 @@ let
   pkgs = import nixpkgs { config = {}; overlays = []; };
 in
 
-pkgs.mkShellNoCC {
+pkgs.mkShell {
+  buildInputs = with pkgs; [
+    glfw
+    libGL
+    libglvnd
+    mesa
+  ];
+
   packages = with pkgs; [
     vulkan-tools
     vulkan-headers
@@ -11,11 +18,17 @@ pkgs.mkShellNoCC {
     vulkan-loader
     vulkan-utility-libraries
 
+    #glfw stuff
     glfw3
+    glfw
+
+    #glm stuff for math
     glm
+
+    #opengl stuff
     libGL
     libGLU
-    glfw
+    libglvnd
     glew
     freeglut
     mesa
@@ -25,8 +38,12 @@ pkgs.mkShellNoCC {
     xorg.libXcursor
     xorg.libXi
 
+    #cmake stuff
     cmake
     pkg-config
+
+    #meson??? I am considering moving to
+    #meson
   ];
 
   # Help CMake find Vulkan
