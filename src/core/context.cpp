@@ -19,7 +19,7 @@ namespace core {
       }
     ),
     queue_indicies(vulkan::find_queue_family(device.physical, surface)),
-    swapchain(this), 
+    swapchain(this),
     allocator(get_allocator())
   { }
 
@@ -46,7 +46,7 @@ namespace core {
   }
 
   VkDevice vulkan_context::get_device(std::vector<const char*> device_extensions) {
-    auto dev = vulkan::create_logical_device(device.physical, surface, device_extensions); 
+    auto dev = vulkan::create_logical_device(device.physical, surface, device_extensions);
     if (dev.has_value()) return dev.value();
     //error handling
     std::cout << "failed to initialize device\n";
@@ -97,13 +97,19 @@ namespace core {
 
       return VK_FALSE;
   }
+}
 
+namespace core {
+  vulkan_context_singleton::vulkan_context_singleton() :
+    window(glfw::create_window(720, 720)),
+    instance(*vulkan::create_instance("Vulkan", application_extensions)),
+    surface(*vulkan::create_surface(instance, window)),
 }
 
 namespace core {
   swap_chain::swap_chain(vulkan_context *context) :
     context(context)
-  { 
+  {
     vulkan::swap_chain_support_details support = vulkan::get_swap_chain_support(context->device.physical, context->surface);
     VkSurfaceFormatKHR surface_format = vulkan::choose_format(support.formats);
     format = surface_format.format;
@@ -116,13 +122,13 @@ namespace core {
   }
 
   VkSwapchainKHR swap_chain::get_swapchain(vulkan::swap_chain_support_details& support, VkSurfaceFormatKHR& surface_format) {
-    auto swp_chain = vulkan::create_swap_chain(context->device, 
-                                         context->surface, 
-                                         context->queue_indicies, 
-                                         support, 
-                                         context->window, 
-                                         surface_format, 
-                                         extent, 
+    auto swp_chain = vulkan::create_swap_chain(context->device,
+                                         context->surface,
+                                         context->queue_indicies,
+                                         support,
+                                         context->window,
+                                         surface_format,
+                                         extent,
                                          vulkan::choose_present_mode(support.present_modes));
 
     if (swp_chain.has_value()) return swp_chain.value();
@@ -136,7 +142,7 @@ namespace core {
   }
 
   void swap_chain::create_image_views() {
-    for(VkImage& image : images) 
+    for(VkImage& image : images)
       image_views.push_back(vulkan::create_image_view(context->device.logical, image, format).value());
   }
 }
