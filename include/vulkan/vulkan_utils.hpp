@@ -12,10 +12,7 @@
 namespace vulkan {
 
   template<auto Fun, typename... Args>
-  auto call(Args... args) -> decltype(std::invoke(Fun, std::declval<Args>(args)...)) {
-    using T = decltype(std::invoke(Fun, std::declval<Args>(args)...));
-    T obj;
-  }
+  auto create(VkDevice dev, Args... args) ->
 
   //THIS IS ALL SOON TO BE DELETED
   std::vector<const char*> require_extensions();
